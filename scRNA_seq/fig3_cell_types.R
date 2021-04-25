@@ -1,9 +1,21 @@
 # ---------------------------------------------------------------
-## Scripts to identify cell types from scRNA-seq data
+## Scripts to identify cell types from scRNA-seq data and plot figures in Figure 3 and Supplementary Figures 3 and 4 of the manuscript
 ## Author: Veronique LeBlanc
 # ---------------------------------------------------------------
 
 all_final <- readRDS("./data/Robjects/clean/all_190604_190802mitodbltfil_fil.rds") #generated in the pre_processing.R script
+
+source("./funcs_utils.R")
+source("./funcs_clustering.R")
+source("./funcs_figs.R")
+
+library(SingleR) #v0.2.0
+library(infercnv) #v1.1.1
+library(ape)
+
+# Colours for plotting tumours
+tum_cols = c("JK124" = "#BC4765", "JK125" = "#83CCB3", "JK126" = "#493737", "JK134" = "#CEBC52", "JK136" = "#533476", "JK202" = "#7D40D3",
+             "JK142" = "#59713C", "JK196" = "#7BD355", "JK152" = "#C55D32", "JK153" = "#7E90C4", "JK156" = "#CAA7A0", "JK163" = "#CD5CBD")
 
 # ---------------------------------------------------------------
 ## Tissue cells
@@ -34,11 +46,27 @@ tis_tree <- clust.tree(tis, method = "pca", weight_vals = attr(tis@reducedDims$P
 # Reorder clusters based on their location on the tree
 tis$gclust <- factor(tis$gclust, levels = tis_tree$hclust$order)
 
+# Save tissue object with updated clusters
+tis <- saveRDS(tis, "./data/Robjects/scRNA/clean/tis_mito_dblt_fil_allsamps.rds")
+
+# Plot UMAPs
+plot.red.dim(tis, dim_use = "UMAP", colour_by = "tumour", col_vals = tum_cols, plot_title = "tis")
+
+plot.red.dim(tis, exprs_use = "logcounts", dim_use = "UMAP", colour_by = "PTPRC", col_by_exp = TRUE, plot_title = "tis")
+plot.red.dim(tis, exprs_use = "logcounts", dim_use = "UMAP", colour_by = "ACTA2", col_by_exp = TRUE, plot_title = "tis")
+plot.red.dim(tis, exprs_use = "logcounts", dim_use = "UMAP", colour_by = "VWF", col_by_exp = TRUE, plot_title = "tis")
+plot.red.dim(tis, exprs_use = "logcounts", dim_use = "UMAP", colour_by = "MOG", col_by_exp = TRUE, plot_title = "tis")
+
 
 ## COMPARE TO REFERENCE CELL TYPES
 
 # Compare to reference cell types using SingleR
 tis_snglr <- CreateSinglerObject(counts = as.matrix(logcounts(tis)), annot = tis$gclust, clusters = tis$gclust, numCores = 10, project.name = "tis cells")
+
+# Plot (see Supplementary Figure 3)
+singleR.draw.heatmap.custom(tis_snglr$singler[[1]]$SingleR.single.main, top.n = Inf, 
+                            clusters = factor(tis_snglr$meta.data$orig.ident, levels = levels(tis$gclust)), 
+                            normalize = F, order.by.clusters = T)
 
 # Based on cluster similarities to reference cell types (see supplementary figure 3), assign expression-based cell types
 colData(tis)$cell_type_exp <- factor(ifelse(tis$gclust %in% c("19", "4", "20"), "immune",
@@ -134,6 +162,16 @@ org_tree <- clust.tree(org, method = "pca", weight_vals = attr(org@reducedDims$P
 # Reorder clusters based on their location on the tree
 org$gclust <- factor(org$gclust, levels = org_tree$hclust$order)
 
+# Save PDO object with updated clusters
+org <- saveRDS(org, "./data/Robjects/scRNA/clean/org_mito_dblt_fil_allsamps.rds")
+
+# Plot UMAPs
+plot.red.dim(org, dim_use = "UMAP", colour_by = "tumour", col_vals = tum_cols, plot_title = "org")
+
+plot.red.dim(org, exprs_use = "logcounts", dim_use = "UMAP", colour_by = "PTPRC", col_by_exp = TRUE, plot_title = "org")
+plot.red.dim(org, exprs_use = "logcounts", dim_use = "UMAP", colour_by = "PDGFRB", col_by_exp = TRUE, plot_title = "org")
+plot.red.dim(org, exprs_use = "logcounts", dim_use = "UMAP", colour_by = "MAG", col_by_exp = TRUE, plot_title = "org")
+
 
 ## COMPARE TO REFERENCE CELL TYPES
 
@@ -222,6 +260,17 @@ btic_tree <- clust.tree(btic, method = "pca", weight_vals = attr(btic@reducedDim
 
 # Reorder clusters based on their location on the tree
 btic$gclust <- factor(btic$gclust, levels = btic_tree$hclust$order)
+
+# Save BTIC object with updated clusters
+btic <- saveRDS(btic, "./data/Robjects/scRNA/clean/btic_mito_dblt_fil_allsamps.rds")
+
+# Plot UMAPs
+plot.red.dim(btic, dim_use = "UMAP", colour_by = "tumour", col_vals = tum_cols, plot_title = "btic")
+
+plot.red.dim(btic, exprs_use = "logcounts", dim_use = "UMAP", colour_by = "ACTA2", col_by_exp = TRUE, plot_title = "btic")
+plot.red.dim(btic, exprs_use = "logcounts", dim_use = "UMAP", colour_by = "PDGFRB", col_by_exp = TRUE, plot_title = "btic")
+plot.red.dim(btic, exprs_use = "logcounts", dim_use = "UMAP", colour_by = "MAG", col_by_exp = TRUE, plot_title = "btic")
+
 
 
 ## COMPARE TO REFERENCE CELL TYPES

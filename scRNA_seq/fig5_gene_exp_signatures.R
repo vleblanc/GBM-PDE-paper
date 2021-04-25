@@ -1,15 +1,19 @@
 # ---------------------------------------------------------------
-## Scripts to calculate signature scores for single cells according to the method and gene sets presented in Neftel et al (Cell 2019)
+## Scripts to calculate signature scores for single cells according to the method and gene sets presented in Neftel et al (Cell 2019) and plot figures in Figure 5 and Supplementary Figure 7 of the manuscript
 ## Author: Veronique LeBlanc
 # ---------------------------------------------------------------
 
+source("./funcs_analysis")
+
+library(ggplot2)
+library(entropy)
 
 # ---------------------------------------------------------------
 ## Tissue cells
 # ---------------------------------------------------------------
 
 # Load tissue cells object
-tis <- readRDS("./data/Robjects/scRNA/clean/tis_mito_dblt_fil_allsamps.rds") #generated in the cell_types.R script
+tis <- readRDS("./data/Robjects/scRNA/clean/tis_mito_dblt_fil_allsamps.rds") #generated in the fig3_cell_types.R script
 
 # Get scores
 tis_sigs <- get.sig.scores(tis[, !is.na(tis$cell_type)], neftel_sigs, rank_method = "aggregate", n_cores = 4)
