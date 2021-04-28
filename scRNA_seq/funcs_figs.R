@@ -1,4 +1,8 @@
-#library(SC3)
+# ---------------------------------------------------------------
+## Functions to make scRNA-seq figures
+## Author: Veronique LeBlanc
+# ---------------------------------------------------------------
+
 library(ggplot2)
 library(RColorBrewer)
 library(cowplot)
